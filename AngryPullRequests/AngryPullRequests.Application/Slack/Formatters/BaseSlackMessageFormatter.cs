@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Models;
+using AngryPullRequests.Application.AngryPullRequests.Common.Models;
 using AngryPullRequests.Domain.Entities;
 using SlackNet.Blocks;
 using System;
@@ -10,9 +10,9 @@ namespace AngryPullRequests.Application.Slack.Formatters
 {
     public abstract class BaseSlackMessageFormatter : ISlackMessageFormatter
     {
-        protected PlainText CreatePe(string text) => new() { Text = text, Emoji = true };
+        protected static PlainText CreatePe(string text) => new() { Text = text, Emoji = true };
 
-        protected Markdown CreateMd(string text) => new() { Text = text };
+        protected static Markdown CreateMd(string text) => new() { Text = text };
 
         public abstract Task<List<Block>> GetBlocks(PullRequestNotificationGroup[] pullRequestNotificationGroups, Repository repository);
     }

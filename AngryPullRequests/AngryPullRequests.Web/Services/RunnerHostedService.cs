@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
+using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Application.AngryPullRequests.Contributors;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Commands;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Queries;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AngryPullRequests.Web.Services
 {
-    public class RunnerHostedService : IHostedService
+    public class RunnerHostedService : IHostedService, IDisposable
     {
         private readonly CancellationTokenSource _tokenSource = new();
         private readonly ILifetimeScope lifetimeScope;
@@ -25,12 +25,12 @@ namespace AngryPullRequests.Web.Services
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await mediator.Send(new IndexContributionsCommand(), cancellationToken);
-            // TODO: move to proper timer later
+            var timer = new System.Threading.Timer(async _ => await Run(), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             while (!cancellationToken.IsCancellationRequested)
             {
                 await Run();
 
-                // Calculate delay untill next minute, assuming tasks don't run for more than one minute
+                // Calculate delay until next minute, assuming tasks don't run for more than one minute
                 var now = DateTimeOffset.UtcNow;
                 var nowPlus = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, TimeSpan.Zero).AddMinutes(1).AddSeconds(5);
 
@@ -70,7 +70,6 @@ namespace AngryPullRequests.Web.Services
             foreach (var repo in repos)
             {
                 var isNow = repo.TimeOfDay.Hour == now.Hour && repo.TimeOfDay.Minute == now.Minute;
-                //isNow = true;
 
                 if (isNow)
                 {
@@ -80,6 +79,11 @@ namespace AngryPullRequests.Web.Services
             }
 
             await Task.WhenAll(runTasks);
+        }
+
+        public void Dispose()
+        {
+            _tokenSource.Dispose();
         }
     }
 }
