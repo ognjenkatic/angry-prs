@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
+using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Application.AngryPullRequests.Contributors;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Commands;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Queries;
@@ -46,6 +46,7 @@ namespace AngryPullRequests.Web.Services
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _tokenSource.Cancel();
+            _tokenSource.Dispose();
             return Task.CompletedTask;
         }
 
@@ -70,7 +71,6 @@ namespace AngryPullRequests.Web.Services
             foreach (var repo in repos)
             {
                 var isNow = repo.TimeOfDay.Hour == now.Hour && repo.TimeOfDay.Minute == now.Minute;
-                //isNow = true;
 
                 if (isNow)
                 {

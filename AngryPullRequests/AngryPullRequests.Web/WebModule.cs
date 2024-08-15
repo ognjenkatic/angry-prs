@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests;
+using AngryPullRequests.Application.AngryPullRequests;
 using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Application.Completion;
 using AngryPullRequests.Application.Github;
@@ -23,8 +23,6 @@ namespace AngryPullRequests.Web
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-
-            //builder.RegisterAutoMapper(typeof(AutoMapperProfile).Assembly);
 
             builder.RegisterType<RunnerHostedService>().As<IHostedService>();
             builder.RegisterType<AngryPullRequestsService>().As<IAngryPullRequestsService>();

@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
+using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Application.Github;
 using AngryPullRequests.Domain.Models;
 using System;
@@ -26,7 +26,7 @@ namespace AngryPullRequests.Application.AngryPullRequests
             this.pullRequestService = pullRequestService;
         }
 
-        public int GetNumberOfPullRequests() => totalPrs;
+        public static int GetNumberOfPullRequests() => totalPrs;
 
         public async Task<Dictionary<string, UserExperience>> GetAuthorExperience(string repository, string owner, string author)
         {
@@ -68,26 +68,27 @@ namespace AngryPullRequests.Application.AngryPullRequests
             return authorExperienceMap;
         }
 
-        private void ProcessPullRequest(PullRequest pullRequest)
+        private static void ProcessPullRequest(PullRequest pullRequest)
         {
             var author = pullRequest.User.Login;
 
-            if (!authorExperienceMap.ContainsKey(author))
+            if (!authorExperienceMap.TryGetValue(author, out var userExperience))
             {
-                authorExperienceMap[author] = new UserExperience();
+                userExperience = new UserExperience();
+                authorExperienceMap[author] = userExperience;
             }
 
             if (pullRequest.Merged)
             {
-                authorExperienceMap[author].PullRequestsAuthored++;
+                userExperience.PullRequestsAuthored++;
 
-                if (pullRequest.CreatedAt < authorExperienceMap[author].FirstAuthoring)
+                if (pullRequest.CreatedAt < userExperience.FirstAuthoring)
                 {
-                    authorExperienceMap[author].FirstAuthoring = pullRequest.CreatedAt.UtcDateTime;
+                    userExperience.FirstAuthoring = pullRequest.CreatedAt.UtcDateTime;
                 }
-                if (pullRequest.CreatedAt > authorExperienceMap[author].LastAuthoring)
+                if (pullRequest.CreatedAt > userExperience.LastAuthoring)
                 {
-                    authorExperienceMap[author].LastAuthoring = pullRequest.CreatedAt.UtcDateTime;
+                    userExperience.LastAuthoring = pullRequest.CreatedAt.UtcDateTime;
                 }
             }
         }
