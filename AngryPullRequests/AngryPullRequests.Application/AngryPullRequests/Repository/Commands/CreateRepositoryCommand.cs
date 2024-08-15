@@ -55,8 +55,6 @@ namespace AngryPullRequests.Application.AngryPullRequests.Commands
 
                 var repository = mapper.Map<Repository>(request);
 
-                var pullRequestService = await pullRequestServiceFactory.Create(currentUser.GithubPat);
-
                 // TODO: Move validation to fluent
 
                 var conflictingRepoExists = await _dbContext.Repositories.FirstOrDefaultAsync(r => r.Name == request.Name && r.Owner == request.Owner, cancellationToken: cancellationToken);
