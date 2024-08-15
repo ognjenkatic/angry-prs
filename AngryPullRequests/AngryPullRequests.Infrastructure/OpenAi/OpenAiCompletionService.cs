@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.Completion;
+using AngryPullRequests.Application.Completion;
 using AngryPullRequests.Application.Completion.Models;
 using OpenAI_API;
 using OpenAI_API.Completions;
@@ -18,7 +18,7 @@ namespace AngryPullRequests.Infrastructure.OpenAi
         {
             if (string.IsNullOrEmpty(configuration.Token))
             {
-                throw new ArgumentNullException("Token must be specified");
+                throw new ArgumentNullException(nameof(configuration.Token));
             }
 
             Api = new OpenAIAPI(configuration.Token);

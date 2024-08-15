@@ -81,7 +81,6 @@ namespace AngryPullRequests.Web.Pages
 
             Repository = new Model
             {
-
                 DeleteHeavyRatio = 0.1f,
                 InactivePrAgeInDays = 10,
                 InProgressLabel = "in progress",
@@ -112,7 +111,6 @@ namespace AngryPullRequests.Web.Pages
                     repository.Name = "";
                     repository.Owner = "";
 
-                
                     mapper.Map(repository, Repository);
                 }
                 catch (Exception)
@@ -133,7 +131,7 @@ namespace AngryPullRequests.Web.Pages
             {
                 var createCommand = mapper.Map<CreateRepositoryCommand>(Repository);
 
-                var repository = await mediator.Send(createCommand);
+                await mediator.Send(createCommand);
 
                 return RedirectToPage($"/MyRepositories");
             }
@@ -176,4 +174,3 @@ namespace AngryPullRequests.Web.Pages
         }
     }
 }
-                
