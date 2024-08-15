@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.Github;
+using AngryPullRequests.Application.Github;
 using AngryPullRequests.Application.Persistence;
 using AngryPullRequests.Domain.Entities;
 using AngryPullRequests.Domain.Models;
@@ -22,8 +22,6 @@ namespace AngryPullRequests.Application.AngryPullRequests.Contributors.Commands
             private readonly IAngryPullRequestsContext dbContext;
             private readonly IPullRequestServiceFactory pullRequestServiceFactory;
 
-            //private static readonly Dictionary<Guid, Dictionary<string, UserExperience>> authorExperienceMap = new();
-
             public Handler(IAngryPullRequestsContext dbContext, IPullRequestServiceFactory pullRequestServiceFactory)
             {
                 this.dbContext = dbContext;
@@ -32,7 +30,7 @@ namespace AngryPullRequests.Application.AngryPullRequests.Contributors.Commands
 
             public async Task Handle(IndexContributionsCommand request, CancellationToken cancellationToken)
             {
-                var repositories = await dbContext.Repositories.Include(r => r.AngryUser).ToListAsync();
+                var repositories = await dbContext.Repositories.Include(r => r.AngryUser).ToListAsync(cancellationToken);
 
                 var tasks = new List<Task<(Guid, Dictionary<string, UserExperience>)>>();
 
@@ -43,71 +41,83 @@ namespace AngryPullRequests.Application.AngryPullRequests.Contributors.Commands
 
                 var dictionaries = await Task.WhenAll(tasks);
 
-                var contributors = await dbContext.RepositoryContributors.Include(rc => rc.Repository).Include(rc => rc.Contributor).ToListAsync();
+                var contributors = await dbContext.RepositoryContributors
+                    .Include(rc => rc.Repository)
+                    .Include(rc => rc.Contributor)
+                    .ToListAsync(cancellationToken);
 
                 foreach (var repositoryContributions in dictionaries)
                 {
-                    foreach (var contibution in repositoryContributions.Item2)
+                    foreach (var contribution in repositoryContributions.Item2)
                     {
-                        var contributorName = contibution.Key;
-                        var repositoryId = repositoryContributions.Item1;
-                        var contributingUser = contributors.Select(c => c.Contributor).FirstOrDefault(u => u.GithubUsername == contributorName);
-
-                        if (contributingUser is null)
-                        {
-                            var contribution = new RepositoryContributor
-                            {
-                                Contributor = new Contributor { GithubUsername = contributorName, },
-                                Repository = repositories.First(r => r.Id == repositoryId),
-                                FirstMergeAt = contibution.Value.FirstAuthoring,
-                                LastMergeAt = contibution.Value.LastAuthoring,
-                                MergedPullRequestCount = contibution.Value.PullRequestsAuthored,
-                                CommentCount = contibution.Value.Comments,
-                                ApprovalCount = contibution.Value.Approvals,
-                                ChangeRequestCount = contibution.Value.ChangeRequests
-                            };
-
-                            contributors.Add(contribution);
-                            dbContext.RepositoryContributors.Add(contribution);
-                        }
-                        else
-                        {
-                            var existingContribution = contributors.FirstOrDefault(
-                                rc => rc.ContributorId == contributingUser.Id && rc.RepositoryId == repositoryId
-                            );
-
-                            if (existingContribution is null)
-                            {
-                                var contribution = new RepositoryContributor
-                                {
-                                    Contributor = contributingUser,
-                                    Repository = repositories.First(r => r.Id == repositoryId),
-                                    RepositoryId = repositories.First(r => r.Id == repositoryId).Id,
-                                    FirstMergeAt = contibution.Value.FirstAuthoring,
-                                    LastMergeAt = contibution.Value.LastAuthoring,
-                                    MergedPullRequestCount = contibution.Value.PullRequestsAuthored,
-                                    CommentCount = contibution.Value.Comments,
-                                    ApprovalCount = contibution.Value.Approvals,
-                                    ChangeRequestCount = contibution.Value.ChangeRequests
-                                };
-
-                                contributors.Add(contribution);
-                                dbContext.RepositoryContributors.Add(contribution);
-                            }
-                            else
-                            {
-                                existingContribution.FirstMergeAt = contibution.Value.FirstAuthoring;
-                                existingContribution.LastMergeAt = contibution.Value.LastAuthoring;
-                                existingContribution.MergedPullRequestCount = contibution.Value.PullRequestsAuthored;
-                                existingContribution.CommentCount = contibution.Value.Comments;
-                                existingContribution.ApprovalCount = contibution.Value.Approvals;
-                                existingContribution.ChangeRequestCount = contibution.Value.ChangeRequests;
-                            }
-                        }
+                        await ProcessContribution(contributors, repositories, repositoryContributions.Item1, contribution);
                     }
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken);
+            }
+
+            private async Task ProcessContribution(
+                List<RepositoryContributor> contributors,
+                List<Repository> repositories,
+                Guid repositoryId,
+                KeyValuePair<string, UserExperience> contribution
+            )
+            {
+                var contributorName = contribution.Key;
+                var contributingUser = contributors.Select(c => c.Contributor).FirstOrDefault(u => u.GithubUsername == contributorName);
+
+                if (contributingUser is null)
+                {
+                    var newContribution = new RepositoryContributor
+                    {
+                        Contributor = new Contributor { GithubUsername = contributorName },
+                        Repository = repositories.First(r => r.Id == repositoryId),
+                        FirstMergeAt = contribution.Value.FirstAuthoring,
+                        LastMergeAt = contribution.Value.LastAuthoring,
+                        MergedPullRequestCount = contribution.Value.PullRequestsAuthored,
+                        CommentCount = contribution.Value.Comments,
+                        ApprovalCount = contribution.Value.Approvals,
+                        ChangeRequestCount = contribution.Value.ChangeRequests
+                    };
+
+                    contributors.Add(newContribution);
+                    dbContext.RepositoryContributors.Add(newContribution);
+                }
+                else
+                {
+                    var existingContribution = contributors.FirstOrDefault(
+                        rc => rc.ContributorId == contributingUser.Id && rc.RepositoryId == repositoryId
+                    );
+
+                    if (existingContribution is null)
+                    {
+                        var newContribution = new RepositoryContributor
+                        {
+                            Contributor = contributingUser,
+                            Repository = repositories.First(r => r.Id == repositoryId),
+                            RepositoryId = repositoryId,
+                            FirstMergeAt = contribution.Value.FirstAuthoring,
+                            LastMergeAt = contribution.Value.LastAuthoring,
+                            MergedPullRequestCount = contribution.Value.PullRequestsAuthored,
+                            CommentCount = contribution.Value.Comments,
+                            ApprovalCount = contribution.Value.Approvals,
+                            ChangeRequestCount = contribution.Value.ChangeRequests
+                        };
+
+                        contributors.Add(newContribution);
+                        dbContext.RepositoryContributors.Add(newContribution);
+                    }
+                    else
+                    {
+                        existingContribution.FirstMergeAt = contribution.Value.FirstAuthoring;
+                        existingContribution.LastMergeAt = contribution.Value.LastAuthoring;
+                        existingContribution.MergedPullRequestCount = contribution.Value.PullRequestsAuthored;
+                        existingContribution.CommentCount = contribution.Value.Comments;
+                        existingContribution.ApprovalCount = contribution.Value.Approvals;
+                        existingContribution.ChangeRequestCount = contribution.Value.ChangeRequests;
+                    }
+                }
             }
 
             private async Task<(Guid, Dictionary<string, UserExperience>)> IndexRepository(
@@ -116,14 +126,11 @@ namespace AngryPullRequests.Application.AngryPullRequests.Contributors.Commands
             )
             {
                 int lastPageFetched = 1;
-                int totalPrs = 0;
                 Dictionary<string, UserExperience> authorExperienceMap = new();
                 bool goNext;
                 do
                 {
                     var pullRequests = await pullRequestService.GetPullRequests(repository.Owner, repository.Name, true, 1, 100, lastPageFetched);
-
-                    totalPrs += pullRequests.Length;
 
                     if (pullRequests.Length >= 100)
                     {
@@ -157,21 +164,19 @@ namespace AngryPullRequests.Application.AngryPullRequests.Contributors.Commands
                 {
                     var reviews = await pullRequestService.GetPullRequsetReviews(repository.Owner, repository.Name, pullRequest.Number);
 
-                    if (!authorExperienceMap.ContainsKey(author))
+                    if (!authorExperienceMap.TryGetValue(author, out var authorExperience))
                     {
-                        authorExperienceMap[author] = new UserExperience();
+                        authorExperience = new UserExperience();
+                        authorExperienceMap[author] = authorExperience;
                     }
-
-                    var authorExperience = authorExperienceMap[author];
 
                     foreach (var review in reviews)
                     {
-                        if (!authorExperienceMap.ContainsKey(review.User.Login))
+                        if (!authorExperienceMap.TryGetValue(review.User.Login, out var contributorExperience))
                         {
-                            authorExperienceMap[review.User.Login] = new UserExperience();
+                            contributorExperience = new UserExperience();
+                            authorExperienceMap[review.User.Login] = contributorExperience;
                         }
-
-                        var contributorExperience = authorExperienceMap[review.User.Login];
 
                         if (review.State == PullRequestReviewStates.Approved)
                         {

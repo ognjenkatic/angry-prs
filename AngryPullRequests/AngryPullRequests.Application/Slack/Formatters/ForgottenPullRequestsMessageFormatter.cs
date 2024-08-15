@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Domain.Models;
+using AngryPullRequests.Domain.Models;
 using SlackNet.Blocks;
 using System;
 using System.Collections.Generic;
@@ -25,8 +25,6 @@ namespace AngryPullRequests.Application.Slack.Formatters
             var reviewersText = reviewers?.Length > 0 ? $"{string.Join(',', reviewers.Select(r => r.Login))}" : "N/A";
 
             var pullRequestTitle = pullRequestStateService.GetNameWithoutJiraTicket(pullRequest) ?? pullRequest.Title;
-
-            //var authorExperience = await metricService.GetAuthorExperience("vodafone-frinx-admin", "Codaxy", pullRequest.User.Login);
 
             var blocks = new List<Block>
             {
@@ -105,15 +103,10 @@ namespace AngryPullRequests.Application.Slack.Formatters
             characteristics.Add($"autor je {pullRequest.User.Login}");
             characteristics.Add($"za review su zaduzeni {reviewersText}");
 
-            var props = characteristics.Count > 0 ? string.Join(',', characteristics) : string.Empty;
-
-            //var authorExp = pullRequestStateService.GetUserExperienceLabels(authorExperience);
-
             var elements = new List<IContextElement>
             {
                 CreateMd($"Dana star: *{(DateTimeOffset.Now - pullRequest.CreatedAt).Days}*"),
                 CreateMd($"Promjene: *{pullRequest.ChangedFiles} CF / {pullRequest.Additions} A / {pullRequest.Deletions} D*"),
-                //CreateMd($"Autor: *{pullRequest.User.Login}* **{authorExp[pullRequest.User.Login].ToString()}**"),
                 CreateMd($"Pregleda: *{reviewersText}*"),
                 CreateMd($"Base: *{pullRequest.BaseRef}*"),
                 CreateMd($"Head: *{pullRequest.HeadRef}*")
@@ -135,8 +128,6 @@ namespace AngryPullRequests.Application.Slack.Formatters
 
         public override async Task<List<Block>> GetBlocks(PullRequestNotificationGroup[] pullRequestNotificationGroups, Repository repository)
         {
-            var users = string.Join(',', pullRequestNotificationGroups.Select(p => p.PullRequest.User.Login).ToList());
-
             var blocks = new List<Block> { new HeaderBlock { Text = CreatePe($"{repository.Name} - Pregled Pull Requestova") } };
 
             var tasks = pullRequestNotificationGroups.Select(ng => GetPullRequestsMessageBlocks(ng.Reviewers, ng.PullRequest, repository));

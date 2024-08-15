@@ -57,4 +57,4 @@ app.MapDefaultControllerRoute();
 
 MigrationUtil.MigrateDatabase(app.Services);
 
-app.Run();
+await app.RunAsync();

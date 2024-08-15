@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,21 +8,21 @@ namespace AngryPullRequests.Application.AngryPullRequests.Common.Exceptions
 {
     public abstract class AngryValidationException : Exception
     {
-        public AngryValidationException(string message) : base(message) { }
+        protected AngryValidationException(string message) : base(message) { }
     }
 
-    public class RepositoryExists : AngryValidationException
+    public class RepositoryExistsException : AngryValidationException
     {
-        public RepositoryExists(string message) : base(message) { }
+        public RepositoryExistsException(string message) : base(message) { }
     }
 
-    public class UnableToAccessRepository : AngryValidationException
+    public class UnableToAccessRepositoryException : AngryValidationException
     {
-        public UnableToAccessRepository(string message) : base(message) { }
+        public UnableToAccessRepositoryException(string message) : base(message) { }
     }
 
-    public class UnableToSendSlackMessage : AngryValidationException
+    public class UnableToSendSlackMessageException : AngryValidationException
     {
-        public UnableToSendSlackMessage(string message) : base(message) { }
+        public UnableToSendSlackMessageException(string message) : base(message) { }
     }
 }

@@ -112,7 +112,6 @@ namespace AngryPullRequests.Web.Pages
                     repository.Name = "";
                     repository.Owner = "";
 
-                
                     mapper.Map(repository, Repository);
                 }
                 catch (Exception)
@@ -133,7 +132,7 @@ namespace AngryPullRequests.Web.Pages
             {
                 var createCommand = mapper.Map<CreateRepositoryCommand>(Repository);
 
-                var repository = await mediator.Send(createCommand);
+                await mediator.Send(createCommand);
 
                 return RedirectToPage($"/MyRepositories");
             }
@@ -176,4 +175,3 @@ namespace AngryPullRequests.Web.Pages
         }
     }
 }
-                
