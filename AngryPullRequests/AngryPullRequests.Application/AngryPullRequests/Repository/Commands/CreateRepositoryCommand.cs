@@ -55,9 +55,11 @@ namespace AngryPullRequests.Application.AngryPullRequests.Commands
 
                 var repository = mapper.Map<Repository>(request);
 
-                var pullRequestService = await pullRequestServiceFactory.Create(currentUser.GithubPat);
-
                 // TODO: Move validation to fluent
+                if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Owner))
+                {
+                    throw new ArgumentException("Repository name and owner cannot be empty.");
+                }
 
                 var conflictingRepoExists = await _dbContext.Repositories.FirstOrDefaultAsync(r => r.Name == request.Name && r.Owner == request.Owner, cancellationToken: cancellationToken);
 
