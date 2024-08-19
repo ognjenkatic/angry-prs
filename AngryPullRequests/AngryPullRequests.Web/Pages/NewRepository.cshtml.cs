@@ -107,13 +107,13 @@ namespace AngryPullRequests.Web.Pages
             {
                 try
                 {
-                    var repository = await mediator.Send(new GetRepositoryQuery { Id = (Guid)clone });
+                    var repositoryResult = await mediator.Send(new GetRepositoryQuery { Id = (Guid)clone });
 
-                    repository.Name = "";
-                    repository.Owner = "";
+                    repositoryResult.Name = "";
+                    repositoryResult.Owner = "";
 
                 
-                    mapper.Map(repository, Repository);
+                    mapper.Map(repositoryResult, Repository);
                 }
                 catch (Exception)
                 {
@@ -133,7 +133,7 @@ namespace AngryPullRequests.Web.Pages
             {
                 var createCommand = mapper.Map<CreateRepositoryCommand>(Repository);
 
-                var repository = await mediator.Send(createCommand);
+                var repositoryResult = await mediator.Send(createCommand);
 
                 return RedirectToPage($"/MyRepositories");
             }
@@ -176,4 +176,3 @@ namespace AngryPullRequests.Web.Pages
         }
     }
 }
-                

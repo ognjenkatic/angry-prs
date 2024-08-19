@@ -1,9 +1,10 @@
-﻿using AngryPullRequests.Infrastructure.Persistence;
+using AngryPullRequests.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Microsoft.EntityFrameworkCore;
 using AngryPullRequests.Application.Persistence;
+using System;
 
 namespace AngryPullRequests.Infrastructure
 {
@@ -11,7 +12,7 @@ namespace AngryPullRequests.Infrastructure
     {
         public static void AddInfrastrucutreServices(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("Database") ?? throw new Exception("Connection string not found.");
+            var connectionString = configuration.GetConnectionString("Database") ?? throw new InvalidOperationException("Connection string not found.");
             serviceCollection.AddDbContext<AngryPullRequestsContext>(
                 (sp, options) =>
                 {

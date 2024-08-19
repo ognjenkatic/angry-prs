@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,11 +6,11 @@ namespace AngryPullRequests.Domain.Models
 {
     public static class PullRequestReviewStates
     {
-        public static string Approved = "APPROVED";
-        public static string ChangesRequested = "CHANGES_REQUESTED";
-        public static string Commented = "COMMENTED";
-        public static string Dismissed = "DISMISSED";
-        public static string Pending = "PENDING";
+        public const string Approved = "APPROVED";
+        public const string ChangesRequested = "CHANGES_REQUESTED";
+        public const string Commented = "COMMENTED";
+        public const string Dismissed = "DISMISSED";
+        public const string Pending = "PENDING";
     }
 
     public class PullRequestReview
