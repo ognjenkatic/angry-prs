@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
+using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Application.AngryPullRequests.Contributors;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Commands;
 using AngryPullRequests.Application.AngryPullRequests.Contributors.Queries;
@@ -7,10 +7,11 @@ using AngryPullRequests.Application.Persistence;
 using Autofac;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace AngryPullRequests.Web.Services
 {
-    public class RunnerHostedService : IHostedService
+    public class RunnerHostedService : IHostedService, IDisposable
     {
         private readonly CancellationTokenSource _tokenSource = new();
         private readonly ILifetimeScope lifetimeScope;
@@ -30,7 +31,7 @@ namespace AngryPullRequests.Web.Services
             {
                 await Run();
 
-                // Calculate delay untill next minute, assuming tasks don't run for more than one minute
+                // Calculate delay until next minute, assuming tasks don't run for more than one minute
                 var now = DateTimeOffset.UtcNow;
                 var nowPlus = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, TimeSpan.Zero).AddMinutes(1).AddSeconds(5);
 
@@ -80,6 +81,11 @@ namespace AngryPullRequests.Web.Services
             }
 
             await Task.WhenAll(runTasks);
+        }
+
+        public void Dispose()
+        {
+            _tokenSource.Dispose();
         }
     }
 }

@@ -107,13 +107,13 @@ namespace AngryPullRequests.Web.Pages
             {
                 try
                 {
-                    var repository = await mediator.Send(new GetRepositoryQuery { Id = (Guid)clone });
+                    var repositoryData = await mediator.Send(new GetRepositoryQuery { Id = (Guid)clone });
 
-                    repository.Name = "";
-                    repository.Owner = "";
+                    repositoryData.Name = "";
+                    repositoryData.Owner = "";
 
                 
-                    mapper.Map(repository, Repository);
+                    mapper.Map(repositoryData, Repository);
                 }
                 catch (Exception)
                 {
@@ -176,4 +176,3 @@ namespace AngryPullRequests.Web.Pages
         }
     }
 }
-                

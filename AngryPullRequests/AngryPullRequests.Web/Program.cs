@@ -10,6 +10,7 @@ using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Reflection;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,4 +58,4 @@ app.MapDefaultControllerRoute();
 
 MigrationUtil.MigrateDatabase(app.Services);
 
-app.Run();
+await app.RunAsync();

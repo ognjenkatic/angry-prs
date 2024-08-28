@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
+using AngryPullRequests.Application.AngryPullRequests.Common.Interfaces;
 using AngryPullRequests.Domain.Entities;
 using AngryPullRequests.Domain.Models;
 using System;
@@ -34,18 +34,14 @@ namespace AngryPullRequests.Application.AngryPullRequests
                 return false;
             }
 
-            // all reviews are recorded, but we are only interested in ones that were done last by a user
             var lastReviews = GetLastReviews(reviews);
-
-            // if user is in requseted reviewers list, we cannot count his previous reviews, so they need to be filtered out
             var nonReRequestedReviews = FilterNonReRequestedUserReviews(lastReviews, requestedReviewers);
 
-            // a pull request is is approved if there is at least one latest review which approves it and there are no change requests
             return nonReRequestedReviews.All(r => r.Value.State != PullRequestReviewStates.ChangesRequested)
                 && nonReRequestedReviews.Any(r => r.Value.State == PullRequestReviewStates.Approved);
         }
 
-        private Dictionary<User, PullRequestReview> FilterNonReRequestedUserReviews(
+        private static Dictionary<User, PullRequestReview> FilterNonReRequestedUserReviews(
             Dictionary<User, PullRequestReview> userReviews,
             User[] requestedReviewers
         )
@@ -53,7 +49,7 @@ namespace AngryPullRequests.Application.AngryPullRequests
             return userReviews.Where(r => !requestedReviewers.Select(a => a.Id).Contains(r.Key.Id)).ToDictionary(r => r.Key, r => r.Value);
         }
 
-        private Dictionary<User, PullRequestReview> GetLastReviews(PullRequestReview[] reviews)
+        private static Dictionary<User, PullRequestReview> GetLastReviews(PullRequestReview[] reviews)
         {
             return reviews
                 .GroupBy(a => a.User.Id, b => b)
@@ -194,9 +190,9 @@ namespace AngryPullRequests.Application.AngryPullRequests
             return experienceLabels;
         }
 
-        public bool IsUserActive(UserExperience userExperience)
+        public static bool IsUserActive(UserExperience userExperience)
         {
-            return userExperience.TimeSinceFirstAuthoring > TimeSpan.FromDays(60) ? true : false;
+            return userExperience.TimeSinceFirstAuthoring > TimeSpan.FromDays(60);
         }
 
         public string GetJiraTicket(PullRequest pullRequest)

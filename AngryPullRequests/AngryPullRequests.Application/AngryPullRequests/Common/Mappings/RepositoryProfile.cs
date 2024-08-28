@@ -1,4 +1,4 @@
-﻿using AngryPullRequests.Application.AngryPullRequests.Commands;
+using AngryPullRequests.Application.AngryPullRequests.Commands;
 using AngryPullRequests.Domain.Entities;
 using AutoMapper;
 using System;
@@ -72,7 +72,6 @@ namespace AngryPullRequests.Application.AngryPullRequests.Common.Mappings
                     dst => dst.RunSchedule,
                     opt => opt.MapFrom(src => new RunSchedule { DaysOfWeek = new int[] { 1, 2, 3, 4, 5 }, TimeOfDay = src.TimeOfDay })
                 );
-            ;
         }
     }
 }
